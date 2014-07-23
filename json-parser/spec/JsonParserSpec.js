@@ -48,6 +48,16 @@ describe("JsonParser", function() {
             var map = {'val1': new JsonNumber(3), 'val2': new JsonNumber(5), 'val3': new JsonNumber(88)};
             expect(tree).toEqual(new JsonObject(map));
         });
+        it("should parse BOOLEAN false", function () {
+            var tree = jsonParser.parse('{\"val1\":false}');
+            var map = {'val1': new JsonBoolean(false)};
+            expect(tree).toEqual(new JsonObject(map));
+        });
+        it("should parse BOOLEAN true", function () {
+            var tree = jsonParser.parse('{\"val1\":true}');
+            var map = {'val1': new JsonBoolean(true)};
+            expect(tree).toEqual(new JsonObject(map));
+        });
     });
     describe("should allow recursion", function () {
         it("should parse JSON with nested JSONs", function () {

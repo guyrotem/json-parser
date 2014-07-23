@@ -11,9 +11,15 @@ JsonParser.prototype.parse = function (input) {
         return new JsonNumber(parseInt(num));
     }
 
+    function getAsBoolean(bool) {
+        return new JsonBoolean(bool === 'false' ? false : true);
+    }
+
     function parseSingleValue(val) {
         if (!isNaN(parseInt(val))) {
             return new getAsInt(val);
+        } else if(val.indexOf('\"') == -1) {
+            return new getAsBoolean(val);
         } else {
             return new getAsString(val);
         }
@@ -54,17 +60,22 @@ JsonParser.prototype.parse = function (input) {
         return str.substring(1, str.length-1);
     }
 
-    var isNested = input.indexOf('{') !== -1;
-    if(!isNested) {
+    function isPrimitive(value) {
+        return value.indexOf('{') === -1
+    }
+
+
+    //  START code
+    if(isPrimitive(input)) {
         return parseSingleValue((input));
     }
 
     var nextExp = stripBrackets(input);
-    var map = {};
+    var jsonMap = {};
 
     while(nextExp != null) {
         if(isEmptyString(nextExp)) {
-            return new JsonObject({});
+            return new JsonObject(null);
         }
         if (isSiblingString(nextExp)) {
             var firstExp = nextExp.split(',')[0];
@@ -74,21 +85,14 @@ JsonParser.prototype.parse = function (input) {
             nextExp = null;
         }
 
-
         var splitted = extractArgs(firstExp);
-        var inp1 = splitted[0];
-        var inp2 = splitted[1];
+        var jsonTitle = splitted[0];
+        var jsonValue = splitted[1];
 
-
-        if (inp2 == null) {
-            return;
-        }
-
-        var self = this;
-        map[inp1] = self.parse(inp2);
+        jsonMap[jsonTitle] = this.parse(jsonValue);
     }
 
-    return new JsonObject(map);
+    return new JsonObject(jsonMap);
 
 };
 
@@ -114,15 +118,14 @@ function JsonString(string) {
     this.data = string;
 }
 
+function JsonBoolean(bool) {
+    this.data = bool;
+}
+
 JsonNumber.prototype = new JsonObject();
+JsonString.prototype = new JsonObject();
+JsonBoolean.prototype = new JsonObject();
 
 JsonObject.empty = function () {
-    //  TODO: should call without an argument ?
-    return new JsonObject({});
+    return new JsonObject(null);
 };
-
-/***
- *
- *
- *
- */
